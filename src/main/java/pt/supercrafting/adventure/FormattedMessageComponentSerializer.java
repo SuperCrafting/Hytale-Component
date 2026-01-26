@@ -99,8 +99,8 @@ final class FormattedMessageComponentSerializer implements HytaleComponentSerial
         ClickEvent clickEvent = style.clickEvent();
         if (clickEvent != null) {
             ClickEvent.Payload payload = clickEvent.payload();
-            if (payload instanceof ClickEvent.Payload.Text) {
-                formatted.link = ((ClickEvent.Payload.Text) payload).value();
+            if (payload instanceof ClickEvent.Payload.Text url) {
+                formatted.link = url.value();
             }
         }
 
