@@ -1,0 +1,32 @@
+plugins {
+    id 'java'
+}
+
+group = 'pt.supercrafting'
+version = '1.0-SNAPSHOT'
+compileJava.options.encoding = 'UTF-8'
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(25))
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    implementation 'net.kyori:adventure-api:4.26.1'
+    implementation 'net.kyori:adventure-text-minimessage:4.26.1'
+    implementation 'net.kyori:adventure-text-serializer-plain:4.26.1'
+
+    implementation files("libs/HytaleServer.jar")
+
+    /* testImplementation platform('org.junit:junit-bom:5.10.0') Todo: One day...
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher' */
+}
+
+/* test {
+    useJUnitPlatform()
+} */
