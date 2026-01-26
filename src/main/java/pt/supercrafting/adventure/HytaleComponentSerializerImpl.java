@@ -6,20 +6,49 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.VirtualComponent;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.NotNull;
+import pt.supercrafting.adventure.tag.resolver.HytaleTagResolver;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-final class FormattedMessageComponentSerializer implements HytaleComponentSerializer<FormattedMessage> {
+final class HytaleComponentSerializerImpl implements HytaleComponentSerializer {
 
-    public static final FormattedMessageComponentSerializer INSTANCE = new FormattedMessageComponentSerializer();
+    public static final HytaleComponentSerializerImpl INSTANCE = new HytaleComponentSerializerImpl();
+
+    public static final ComponentFlattener FLATTENER = ComponentFlattener.basic().toBuilder()
+            .mapper(TextComponent.class, c -> {
+                if(!(c instanceof VirtualComponent vc))
+                    return c.content();
+
+                if(!(vc.renderer() instanceof HytaleRenderer hytaleRenderer))
+                    return vc.content();
+
+                FormattedMessage formattedMessage = hytaleRenderer.formatted();
+                return Objects.requireNonNullElse(formattedMessage.rawText, formattedMessage.messageId);
+            })
+            .build();
+
+    public static final MiniMessage MINI_MESSAGE = MiniMessage.builder()
+            .emitVirtuals(true)
+            .tags(TagResolver.builder()
+                    .resolver(TagResolver.standard())
+                    .resolver(HytaleTagResolver.standard())
+                    .build())
+            .build();
+
+    public static final PlainTextComponentSerializer PLAIN_TEXT = PlainTextComponentSerializer.builder()
+            .flattener(FLATTENER)
+            .build();
 
     @Override
     public @NotNull Component deserialize(@NotNull FormattedMessage input) {
@@ -76,7 +105,7 @@ final class FormattedMessageComponentSerializer implements HytaleComponentSerial
     @Override
     public @NotNull FormattedMessage serialize(@NotNull Component component) {
 
-        FormattedMessage unboxed = HytaleRenderer.unbox(component);
+        FormattedMessage unboxed = HytaleComponentSerializer.unbox(component);
         if (unboxed != null)
             return unboxed;
 
@@ -92,9 +121,9 @@ final class FormattedMessageComponentSerializer implements HytaleComponentSerial
             formatted.color = style.color().asHexString();
         }
 
-        formatted.bold = fromState(style.decoration(TextDecoration.BOLD));
-        formatted.italic = fromState(style.decoration(TextDecoration.ITALIC));
-        formatted.underlined = fromState(style.decoration(TextDecoration.UNDERLINED));
+        formatted.bold = HytaleComponentSerializer.fromState(style.decoration(TextDecoration.BOLD));
+        formatted.italic = HytaleComponentSerializer.fromState(style.decoration(TextDecoration.ITALIC));
+        formatted.underlined = HytaleComponentSerializer.fromState(style.decoration(TextDecoration.UNDERLINED));
 
         ClickEvent clickEvent = style.clickEvent();
         if (clickEvent != null) {
@@ -114,14 +143,6 @@ final class FormattedMessageComponentSerializer implements HytaleComponentSerial
         }
 
         return formatted;
-    }
-
-    public static MaybeBool fromState(TextDecoration.State state) {
-        return switch (state) {
-            case TRUE -> MaybeBool.True;
-            case FALSE -> MaybeBool.False;
-            default -> MaybeBool.Null;
-        };
     }
 
     public static TextDecoration.State toState(MaybeBool maybeBool) {

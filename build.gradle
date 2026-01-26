@@ -30,11 +30,12 @@ dependencies {
 
     compileOnly 'com.hypixel.hytale:Server:2026.01.24-6e2d4fc36'
 
-    /* testImplementation platform('org.junit:junit-bom:5.10.0') Todo: One day...
+    testImplementation 'com.hypixel.hytale:Server:2026.01.24-6e2d4fc36'
+    testImplementation platform('org.junit:junit-bom:5.10.0') //Todo: One day...
     testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher' */
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-/* test {
+test {
     useJUnitPlatform()
-} */
+}

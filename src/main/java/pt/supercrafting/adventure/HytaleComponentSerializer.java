@@ -1,45 +1,65 @@
 package pt.supercrafting.adventure;
 
 import com.hypixel.hytale.protocol.FormattedMessage;
+import com.hypixel.hytale.protocol.MaybeBool;
+import com.hypixel.hytale.server.core.Message;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.VirtualComponent;
+import net.kyori.adventure.text.VirtualComponentRenderer;
 import net.kyori.adventure.text.flattener.ComponentFlattener;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.jetbrains.annotations.ApiStatus;
 
-import java.util.Objects;
+public sealed interface HytaleComponentSerializer extends ComponentSerializer<Component, Component, FormattedMessage> permits HytaleComponentSerializerImpl{
 
-public interface HytaleComponentSerializer<H> extends ComponentSerializer<Component, Component, H> {
+    static ComponentFlattener flattener() {
+        return HytaleComponentSerializerImpl.FLATTENER;
+    }
 
-    ComponentFlattener FLATTENER = ComponentFlattener.basic().toBuilder()
-            .mapper(TextComponent.class, c -> {
-                if(!(c instanceof VirtualComponent vc))
-                    return c.content();
+    static MiniMessage miniMessage() {
+        return HytaleComponentSerializerImpl.MINI_MESSAGE;
+    }
 
-                if(!(vc.renderer() instanceof HytaleRenderer hytaleRenderer))
-                    return vc.content();
+    static PlainTextComponentSerializer plainText() {
+        return HytaleComponentSerializerImpl.PLAIN_TEXT;
+    }
 
-                FormattedMessage formattedMessage = hytaleRenderer.formatted();
-                return Objects.requireNonNullElse(formattedMessage.rawText, formattedMessage.messageId);
-            })
-            .build();
+    static HytaleComponentSerializer get() {
+        return HytaleComponentSerializerImpl.INSTANCE;
+    }
 
-    MiniMessage MINI_MESSAGE = MiniMessage.builder()
-            .tags(TagResolver.builder()
-                    .resolver(HytaleTagResolver.standard())
-                    .resolver(TagResolver.standard())
-                    .build())
-            .build();
+    default Message deserializeToMessage(FormattedMessage input) {
+        return new Message(input);
+    }
 
-    PlainTextComponentSerializer PLAIN_TEXT = PlainTextComponentSerializer.builder()
-            .flattener(FLATTENER)
-            .build();
+    default Component deserializeFromMessage(Message input) {
+        return deserialize(input.getFormattedMessage());
+    }
 
-    static HytaleComponentSerializer<FormattedMessage> formattedMessage() {
-        return FormattedMessageComponentSerializer.INSTANCE;
+    @ApiStatus.Internal
+    static FormattedMessage unbox(Component component) {
+        if (!(component instanceof VirtualComponent vc))
+            return null;
+        if (!(vc.renderer() instanceof HytaleRenderer hytaleRenderer))
+            return null;
+        return hytaleRenderer.formatted();
+    }
+
+    @ApiStatus.Internal
+    static VirtualComponentRenderer<Void> box(FormattedMessage message, Component component) {
+        return new HytaleRenderer(message, component);
+    }
+
+    @ApiStatus.Internal
+    static MaybeBool fromState(TextDecoration.State state) {
+        return switch (state) {
+            case TRUE -> MaybeBool.True;
+            case FALSE -> MaybeBool.False;
+            default -> MaybeBool.Null;
+        };
     }
 
 }

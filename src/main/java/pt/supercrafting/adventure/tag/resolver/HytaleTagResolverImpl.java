@@ -1,20 +1,22 @@
-package pt.supercrafting.adventure;
+package pt.supercrafting.adventure.tag.resolver;
 
 import com.hypixel.hytale.protocol.FormattedMessage;
-import com.hypixel.hytale.server.core.Message;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.VirtualComponent;
 import net.kyori.adventure.text.minimessage.TokenHelper;
 import net.kyori.adventure.text.minimessage.internal.serializer.Emitable;
 import net.kyori.adventure.text.minimessage.internal.serializer.SerializableResolver;
+import net.kyori.adventure.text.minimessage.tag.Modifying;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import pt.supercrafting.adventure.HytaleComponentSerializer;
+import pt.supercrafting.adventure.tag.MonospaceTag;
+import pt.supercrafting.adventure.tag.HytaleTag;
 
 import java.util.*;
 
-final class HytaleTagResolverImpl implements HytaleTagResolver {
+final class HytaleTagResolverImpl implements /*Modifying, */HytaleTagResolver {
 
     static final TagResolver STANDARD = TagResolver.builder()
             .resolver(HytaleTagResolver.builder()
@@ -45,12 +47,26 @@ final class HytaleTagResolverImpl implements HytaleTagResolver {
         return tagResolver;
     }
 
+    /*@Override
+    public Component apply(@NotNull Component current, int depth) {
+
+        current = current.children(List.of());
+
+        if(tags.isEmpty() || !Component.IS_NOT_EMPTY.test(current))
+            return current;
+
+        FormattedMessage message = HytaleComponentSerializer.get().serialize(current);
+        for (HytaleTag tag : tags)
+            tag.apply(message);
+        return Component.virtual(Void.class, HytaleComponentSerializer.box(message, current)).style(current.style());
+    }*/
+
     @Nullable
     private Emitable claim(Component component) {
 
         component = component.children(List.of());
 
-        FormattedMessage formattedMessage = HytaleRenderer.unbox(component);
+        FormattedMessage formattedMessage = HytaleComponentSerializer.unbox(component);
         if (formattedMessage == null)
             return null;
 
@@ -67,7 +83,7 @@ final class HytaleTagResolverImpl implements HytaleTagResolver {
 
     }
 
-    public static class BuilderImpl implements HytaleTagResolver.Builder {
+    public static final class BuilderImpl implements HytaleTagResolver.Builder {
 
         private String name = "hytale";
         private List<HytaleTag> tags;

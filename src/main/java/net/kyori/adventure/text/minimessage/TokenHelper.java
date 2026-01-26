@@ -31,6 +31,10 @@ public final class TokenHelper {
 
     }
 
+    private TokenHelper() {
+        throw new UnsupportedOperationException();
+    }
+
     public static void emitUnquoted(TokenEmitter emitter, String text) {
         if(CONSUMER == null) {
             emitter.text(text);

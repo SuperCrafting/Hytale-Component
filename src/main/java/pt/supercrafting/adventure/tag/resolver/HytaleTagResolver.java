@@ -1,9 +1,10 @@
-package pt.supercrafting.adventure;
+package pt.supercrafting.adventure.tag.resolver;
 
 import net.kyori.adventure.builder.AbstractBuilder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import pt.supercrafting.adventure.tag.HytaleTag;
 
-public interface HytaleTagResolver {
+public sealed interface HytaleTagResolver permits HytaleTagResolverImpl {
 
     TagResolver asTagResolver();
 
@@ -15,7 +16,7 @@ public interface HytaleTagResolver {
         return HytaleTagResolverImpl.STANDARD;
     }
 
-    interface Builder extends AbstractBuilder<HytaleTagResolver> {
+    sealed interface Builder extends AbstractBuilder<HytaleTagResolver> permits HytaleTagResolverImpl.BuilderImpl {
 
         Builder name(String name);
 

@@ -16,14 +16,6 @@ record HytaleRenderer(FormattedMessage formatted, Component component) implement
         this.component = component;
     }
 
-    public static FormattedMessage unbox(Component component) {
-        if (!(component instanceof VirtualComponent vc))
-            return null;
-        if (!(vc.renderer() instanceof HytaleRenderer hytaleRenderer))
-            return null;
-        return hytaleRenderer.formatted();
-    }
-
     @Override
     public FormattedMessage formatted() {
         return this.formatted.clone();
