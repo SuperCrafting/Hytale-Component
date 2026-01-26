@@ -11,6 +11,7 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -95,8 +96,12 @@ final class FormattedMessageComponentSerializer implements HytaleComponentSerial
         formatted.italic = fromState(style.decoration(TextDecoration.ITALIC));
         formatted.underlined = fromState(style.decoration(TextDecoration.UNDERLINED));
 
-        if (style.clickEvent() != null && style.clickEvent().action() == ClickEvent.Action.OPEN_URL) {
-            formatted.link = style.clickEvent().value();
+        ClickEvent clickEvent = style.clickEvent();
+        if (clickEvent != null) {
+            ClickEvent.Payload payload = clickEvent.payload();
+            if (payload instanceof ClickEvent.Payload.Text) {
+                formatted.link = ((ClickEvent.Payload.Text) payload).value();
+            }
         }
 
         List<FormattedMessage> children = new ArrayList<>();
