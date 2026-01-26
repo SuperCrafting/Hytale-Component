@@ -48,7 +48,11 @@ public final class MonospaceTag implements HytaleTag {
         MaybeBool ms = message.monospace;
         if(ms == MaybeBool.Null)
             return;
-        emitter.tag((ms == MaybeBool.True ? "" : REVERT) + TAG);
+        if (state == TextDecoration.State.TRUE && ms == MaybeBool.True) {
+            emitter.tag(TAG);
+        } else if (state == TextDecoration.State.FALSE && ms == MaybeBool.False) {
+            emitter.tag(REVERT + TAG);
+        }
     }
 
     @Override

@@ -49,7 +49,6 @@ final class HytaleTagResolverImpl implements HytaleTagResolver {
             if(!tags.isEmpty()) {
                 for (HytaleTag tag : tags) {
                     for (String name : tag.names()) {
-                        System.out.println("Registering Hytale tag: " + name);
                         resolverBuilder.tag(name, new Applicator(tag));
                     }
                 }
