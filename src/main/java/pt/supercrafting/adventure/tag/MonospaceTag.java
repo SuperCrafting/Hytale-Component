@@ -10,34 +10,37 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.jetbrains.annotations.NotNull;
 import pt.supercrafting.adventure.HytaleComponentSerializer;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
-public final class MonospaceTag implements Modifying, HytaleTag {
-
-    public static final MonospaceTag INSTANCE = new MonospaceTag(TextDecoration.State.NOT_SET);
-
-    private static final MonospaceTag ENABLED = new MonospaceTag(TextDecoration.State.TRUE);
-    private static final MonospaceTag DISABLED = new MonospaceTag(TextDecoration.State.FALSE);
+public final class MonospaceTag implements HytaleTag {
 
     private static final String TAG = "ms";
 
     private static final String REVERT = "!";
 
-    public static final TagResolver RESOLVER;
+    public static final MonospaceTag ENABLED = new MonospaceTag(Set.of(TAG, "mono", "monospace"), TextDecoration.State.TRUE);
+    public static final MonospaceTag DISABLED;
 
     static {
-        TagResolver.Builder resolverBuilder = TagResolver.builder();
-        for (String alias : List.of(TAG, "monospace")) {
-            resolverBuilder.resolver(TagResolver.resolver(alias, ENABLED));
-            resolverBuilder.resolver(TagResolver.resolver(REVERT + alias, DISABLED));
-        }
-        RESOLVER = resolverBuilder.build();
+        List<String> revertNames = new ArrayList<>();
+        for (String name : ENABLED.names)
+            revertNames.add(REVERT + name);
+        DISABLED = new MonospaceTag(Set.copyOf(revertNames), TextDecoration.State.FALSE);
     }
 
+    private final Set<String> names;
     private final TextDecoration.State state;
 
-    private MonospaceTag(TextDecoration.State state) {
+    private MonospaceTag(Set<String> names, TextDecoration.State state) {
+        this.names = names;
         this.state = state;
+    }
+
+    @Override
+    public Set<String> names() {
+        return names;
     }
 
     @Override
@@ -45,24 +48,16 @@ public final class MonospaceTag implements Modifying, HytaleTag {
         MaybeBool ms = message.monospace;
         if(ms == MaybeBool.Null)
             return;
-        emitter.tag((ms == MaybeBool.True ? "" : REVERT) + TAG);
+        if (state == TextDecoration.State.TRUE && ms == MaybeBool.True) {
+            emitter.tag(TAG);
+        } else if (state == TextDecoration.State.FALSE && ms == MaybeBool.False) {
+            emitter.tag(REVERT + TAG);
+        }
     }
 
     @Override
     public void apply(FormattedMessage message) {
         message.monospace = HytaleComponentSerializer.fromState(state);
-    }
-
-    @Override
-    public Component apply(@NotNull Component current, int depth) {
-
-        current = current.children(List.of());
-        if(!Component.IS_NOT_EMPTY.test(current))
-            return current;
-
-        FormattedMessage message = HytaleComponentSerializer.get().serialize(current);
-        message.monospace = HytaleComponentSerializer.fromState(state);
-        return Component.virtual(Void.class, HytaleComponentSerializer.box(message, current)).style(current.style());
     }
 
 }

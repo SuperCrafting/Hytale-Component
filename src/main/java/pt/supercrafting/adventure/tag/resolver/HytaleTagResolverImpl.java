@@ -2,11 +2,13 @@ package pt.supercrafting.adventure.tag.resolver;
 
 import com.hypixel.hytale.protocol.FormattedMessage;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.Context;
 import net.kyori.adventure.text.minimessage.TokenHelper;
 import net.kyori.adventure.text.minimessage.internal.serializer.Emitable;
 import net.kyori.adventure.text.minimessage.internal.serializer.SerializableResolver;
 import net.kyori.adventure.text.minimessage.tag.Modifying;
 import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,16 +18,16 @@ import pt.supercrafting.adventure.tag.HytaleTag;
 
 import java.util.*;
 
-final class HytaleTagResolverImpl implements /*Modifying, */HytaleTagResolver {
+final class HytaleTagResolverImpl implements HytaleTagResolver {
 
     static final TagResolver STANDARD = TagResolver.builder()
             .resolver(HytaleTagResolver.builder()
                     .tags(
-                            MonospaceTag.INSTANCE
+                            MonospaceTag.ENABLED,
+                            MonospaceTag.DISABLED
                     )
                     .build()
                     .asTagResolver())
-            .resolver(MonospaceTag.RESOLVER)
             .build();
 
     private final String name;
@@ -40,11 +42,37 @@ final class HytaleTagResolverImpl implements /*Modifying, */HytaleTagResolver {
     @Override
     public TagResolver asTagResolver() {
         if(tagResolver == null) {
-            tagResolver = TagResolver.builder()
-                    .resolver(SerializableResolver.claimingComponent(name, (_, _) -> Tag.inserting(Component.empty()), this::claim))
-                    .build();
+
+            TagResolver.Builder resolverBuilder = TagResolver.builder()
+                    .resolver(SerializableResolver.claimingComponent(name, (_, _) -> Tag.inserting(Component.empty()), this::claim));
+
+            if(!tags.isEmpty()) {
+                for (HytaleTag tag : tags) {
+                    for (String name : tag.names()) {
+                        resolverBuilder.tag(name, new Applicator(tag));
+                    }
+                }
+            }
+
+            this.tagResolver = resolverBuilder.build();
         }
         return tagResolver;
+    }
+
+    private record Applicator(HytaleTag tag) implements Modifying {
+
+        @Override
+        public Component apply(@NotNull Component current, int depth) {
+            current = current.children(List.of());
+
+            if(!Component.IS_NOT_EMPTY.test(current))
+                return current;
+
+            FormattedMessage message = HytaleComponentSerializer.get().serialize(current);
+            tag.apply(message);
+            return Component.virtual(Void.class, HytaleComponentSerializer.box(message, current)).style(current.style());
+        }
+
     }
 
     /*@Override
