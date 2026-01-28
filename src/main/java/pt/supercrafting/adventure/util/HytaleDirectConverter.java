@@ -1,6 +1,5 @@
 package pt.supercrafting.adventure.util;
 
-import com.hypixel.hytale.protocol.FormattedMessage;
 import com.hypixel.hytale.server.core.Message;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -18,8 +17,7 @@ public final class HytaleDirectConverter {
 
     public static Message fromMiniMessage(@NotNull String text) {
         Component component = MINI_MESSAGE.deserialize(text);
-        FormattedMessage formattedMessage = SERIALIZER.serialize(component);
-        return SERIALIZER.deserializeToMessage(formattedMessage);
+        return SERIALIZER.serializeToMessage(component);
     }
 
     public static String toMiniMessage(@NotNull Message message) {

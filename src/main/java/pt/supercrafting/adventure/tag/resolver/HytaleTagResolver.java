@@ -4,9 +4,7 @@ import net.kyori.adventure.builder.AbstractBuilder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import pt.supercrafting.adventure.tag.HytaleTag;
 
-public sealed interface HytaleTagResolver permits HytaleTagResolverImpl {
-
-    TagResolver asTagResolver();
+public sealed interface HytaleTagResolver extends TagResolver permits HytaleTagResolverImpl {
 
     static Builder builder() {
         return new HytaleTagResolverImpl.BuilderImpl();

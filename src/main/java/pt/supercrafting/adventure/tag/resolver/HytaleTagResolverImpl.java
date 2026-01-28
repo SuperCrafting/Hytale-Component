@@ -3,6 +3,7 @@ package pt.supercrafting.adventure.tag.resolver;
 import com.hypixel.hytale.protocol.FormattedMessage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.Context;
+import net.kyori.adventure.text.minimessage.ParsingException;
 import net.kyori.adventure.text.minimessage.TokenHelper;
 import net.kyori.adventure.text.minimessage.internal.serializer.Emitable;
 import net.kyori.adventure.text.minimessage.internal.serializer.SerializableResolver;
@@ -20,43 +21,46 @@ import java.util.*;
 
 final class HytaleTagResolverImpl implements HytaleTagResolver {
 
-    static final TagResolver STANDARD = TagResolver.builder()
-            .resolver(HytaleTagResolver.builder()
-                    .tags(
-                            MonospaceTag.ENABLED,
-                            MonospaceTag.DISABLED
-                    )
-                    .build()
-                    .asTagResolver())
+    static final TagResolver STANDARD = HytaleTagResolver.builder()
+            .tags(
+                    MonospaceTag.ENABLED,
+                    MonospaceTag.DISABLED
+            )
             .build();
 
     private final String name;
     private final List<HytaleTag> tags;
-    private TagResolver tagResolver;
+    private final TagResolver tagResolver;
 
     private HytaleTagResolverImpl(String name, List<HytaleTag> tags) {
         this.name = name;
         this.tags = List.copyOf(tags);
+        this.tagResolver = create();
     }
 
     @Override
-    public TagResolver asTagResolver() {
-        if(tagResolver == null) {
+    public @Nullable Tag resolve(@NotNull String name, @NotNull ArgumentQueue arguments, @NotNull Context ctx) throws ParsingException {
+        return tagResolver.resolve(name, arguments, ctx);
+    }
 
-            TagResolver.Builder resolverBuilder = TagResolver.builder()
-                    .resolver(SerializableResolver.claimingComponent(name, (_, _) -> Tag.inserting(Component.empty()), this::claim));
+    @Override
+    public boolean has(@NotNull String name) {
+        return tagResolver.has(name);
+    }
 
-            if(!tags.isEmpty()) {
-                for (HytaleTag tag : tags) {
-                    for (String name : tag.names()) {
-                        resolverBuilder.tag(name, new Applicator(tag));
-                    }
+    private TagResolver create() {
+        TagResolver.Builder resolverBuilder = TagResolver.builder()
+                .resolver(SerializableResolver.claimingComponent(name, (_, _) -> Tag.inserting(Component.empty()), this::claim));
+
+        if(!tags.isEmpty()) {
+            for (HytaleTag tag : tags) {
+                for (String name : tag.names()) {
+                    resolverBuilder.tag(name, new Applicator(tag));
                 }
             }
-
-            this.tagResolver = resolverBuilder.build();
         }
-        return tagResolver;
+
+        return resolverBuilder.build();
     }
 
     private record Applicator(HytaleTag tag) implements Modifying {
@@ -70,24 +74,10 @@ final class HytaleTagResolverImpl implements HytaleTagResolver {
 
             FormattedMessage message = HytaleComponentSerializer.get().serialize(current);
             tag.apply(message);
-            return Component.virtual(Void.class, HytaleComponentSerializer.box(message, current)).style(current.style());
+            return Component.virtual(Void.class, HytaleComponentSerializer.box(message, current), current.style());
         }
 
     }
-
-    /*@Override
-    public Component apply(@NotNull Component current, int depth) {
-
-        current = current.children(List.of());
-
-        if(tags.isEmpty() || !Component.IS_NOT_EMPTY.test(current))
-            return current;
-
-        FormattedMessage message = HytaleComponentSerializer.get().serialize(current);
-        for (HytaleTag tag : tags)
-            tag.apply(message);
-        return Component.virtual(Void.class, HytaleComponentSerializer.box(message, current)).style(current.style());
-    }*/
 
     @Nullable
     private Emitable claim(Component component) {

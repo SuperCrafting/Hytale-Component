@@ -99,7 +99,8 @@ final class HytaleComponentSerializerImpl implements HytaleComponentSerializer {
                 component = component.append(deserialize(child));
         }
 
-        return Component.virtual(Void.class, new HytaleRenderer(input, component)).style(styleBuilder).children(component.children());
+        Style style = styleBuilder.build();
+        return Component.virtual(Void.class, new HytaleRenderer(input, component), style).children(component.children());
     }
 
     @Override

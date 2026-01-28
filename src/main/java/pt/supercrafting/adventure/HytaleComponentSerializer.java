@@ -31,8 +31,8 @@ public sealed interface HytaleComponentSerializer extends ComponentSerializer<Co
         return HytaleComponentSerializerImpl.INSTANCE;
     }
 
-    default Message deserializeToMessage(FormattedMessage input) {
-        return new Message(input);
+    default Message serializeToMessage(Component input) {
+        return new Message(serialize(input));
     }
 
     default Component deserializeFromMessage(Message input) {
