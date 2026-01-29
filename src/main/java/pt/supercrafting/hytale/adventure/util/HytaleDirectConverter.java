@@ -1,10 +1,10 @@
-package pt.supercrafting.adventure.util;
+package pt.supercrafting.hytale.adventure.util;
 
 import com.hypixel.hytale.server.core.Message;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.jetbrains.annotations.NotNull;
-import pt.supercrafting.adventure.HytaleComponentSerializer;
+import pt.supercrafting.hytale.adventure.serializer.HytaleComponentSerializer;
 
 public final class HytaleDirectConverter {
 

@@ -1,4 +1,4 @@
-package pt.supercrafting.adventure;
+package pt.supercrafting.hytale.adventure.serializer;
 
 import com.hypixel.hytale.protocol.FormattedMessage;
 import com.hypixel.hytale.protocol.MaybeBool;

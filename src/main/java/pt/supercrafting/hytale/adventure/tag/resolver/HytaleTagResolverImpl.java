@@ -1,4 +1,4 @@
-package pt.supercrafting.adventure.tag.resolver;
+package pt.supercrafting.hytale.adventure.tag.resolver;
 
 import com.hypixel.hytale.protocol.FormattedMessage;
 import net.kyori.adventure.text.Component;
@@ -13,13 +13,17 @@ import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import pt.supercrafting.adventure.HytaleComponentSerializer;
-import pt.supercrafting.adventure.tag.MonospaceTag;
-import pt.supercrafting.adventure.tag.HytaleTag;
+import pt.supercrafting.hytale.adventure.serializer.HytaleComponentSerializer;
+import pt.supercrafting.hytale.adventure.tag.HytaleTag;
+import pt.supercrafting.hytale.adventure.tag.MonospaceTag;
 
 import java.util.*;
 
-final class HytaleTagResolverImpl implements HytaleTagResolver {
+record HytaleTagResolverImpl(
+        String name,
+        List<HytaleTag> tags,
+        TagResolver tagResolver
+) implements HytaleTagResolver {
 
     static final TagResolver STANDARD = HytaleTagResolver.builder()
             .tags(
@@ -28,18 +32,20 @@ final class HytaleTagResolverImpl implements HytaleTagResolver {
             )
             .build();
 
-    private final String name;
-    private final List<HytaleTag> tags;
-    private final TagResolver tagResolver;
-
-    private HytaleTagResolverImpl(String name, List<HytaleTag> tags) {
-        this.name = name;
-        this.tags = List.copyOf(tags);
-        this.tagResolver = create();
+    HytaleTagResolverImpl(String name, List<HytaleTag> tags) {
+        this(
+                name,
+                List.copyOf(tags),
+                create(name, tags)
+        );
     }
 
     @Override
-    public @Nullable Tag resolve(@NotNull String name, @NotNull ArgumentQueue arguments, @NotNull Context ctx) throws ParsingException {
+    public @Nullable Tag resolve(
+            @NotNull String name,
+            @NotNull ArgumentQueue arguments,
+            @NotNull Context ctx
+    ) throws ParsingException {
         return tagResolver.resolve(name, arguments, ctx);
     }
 
@@ -48,57 +54,65 @@ final class HytaleTagResolverImpl implements HytaleTagResolver {
         return tagResolver.has(name);
     }
 
-    private TagResolver create() {
+    private static TagResolver create(String name, List<HytaleTag> tags) {
         TagResolver.Builder resolverBuilder = TagResolver.builder()
-                .resolver(SerializableResolver.claimingComponent(name, (_, _) -> Tag.inserting(Component.empty()), this::claim));
+                .resolver(SerializableResolver.claimingComponent(
+                        name,
+                        (_, _) -> Tag.inserting(Component.empty()),
+                        component -> claim(component, tags)
+                ));
 
-        if(!tags.isEmpty()) {
-            for (HytaleTag tag : tags) {
-                for (String name : tag.names()) {
-                    resolverBuilder.tag(name, new Applicator(tag));
-                }
+        for (HytaleTag tag : tags) {
+            for (String tagName : tag.names()) {
+                resolverBuilder.tag(tagName, new TagApplicator(tag));
             }
         }
 
         return resolverBuilder.build();
     }
 
-    private record Applicator(HytaleTag tag) implements Modifying {
+    private record TagApplicator(HytaleTag tag) implements Modifying {
 
         @Override
         public Component apply(@NotNull Component current, int depth) {
             current = current.children(List.of());
 
-            if(!Component.IS_NOT_EMPTY.test(current))
+            if (!Component.IS_NOT_EMPTY.test(current))
                 return current;
 
             FormattedMessage message = HytaleComponentSerializer.get().serialize(current);
             tag.apply(message);
-            return Component.virtual(Void.class, HytaleComponentSerializer.box(message, current), current.style());
+            return Component.virtual(
+                    Void.class,
+                    HytaleComponentSerializer.box(message, current),
+                    current.style()
+            );
         }
-
     }
 
     @Nullable
-    private Emitable claim(Component component) {
-
+    private static Emitable claim(Component component, List<HytaleTag> tags) {
         component = component.children(List.of());
 
         FormattedMessage formattedMessage = HytaleComponentSerializer.unbox(component);
         if (formattedMessage == null)
             return null;
 
-        String text = Objects.requireNonNull(formattedMessage.rawText, formattedMessage.messageId);
+        String text = Objects.requireNonNull(
+                formattedMessage.rawText,
+                formattedMessage.messageId
+        );
+
         if (text.isBlank())
             return null;
 
         return emitter -> {
             for (HytaleTag tag : tags)
                 tag.claim(formattedMessage, emitter);
-            if(!text.isBlank())
+
+            if (!text.isBlank())
                 TokenHelper.emitUnquoted(emitter, text);
         };
-
     }
 
     public static final class BuilderImpl implements HytaleTagResolver.Builder {
@@ -132,11 +146,14 @@ final class HytaleTagResolverImpl implements HytaleTagResolver {
 
         @Override
         public HytaleTagResolver build() {
-            return new HytaleTagResolverImpl(name, tags == null ? List.of() : tags);
+            return new HytaleTagResolverImpl(
+                    name,
+                    tags == null ? List.of() : tags
+            );
         }
 
         private List<HytaleTag> tags() {
-            if(tags == null)
+            if (tags == null)
                 tags = new ArrayList<>();
             return tags;
         }

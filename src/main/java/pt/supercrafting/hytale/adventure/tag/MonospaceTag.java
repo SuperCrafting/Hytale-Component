@@ -1,14 +1,10 @@
-package pt.supercrafting.adventure.tag;
+package pt.supercrafting.hytale.adventure.tag;
 
 import com.hypixel.hytale.protocol.FormattedMessage;
 import com.hypixel.hytale.protocol.MaybeBool;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.internal.serializer.TokenEmitter;
-import net.kyori.adventure.text.minimessage.tag.Modifying;
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import org.jetbrains.annotations.NotNull;
-import pt.supercrafting.adventure.HytaleComponentSerializer;
+import pt.supercrafting.hytale.adventure.serializer.HytaleComponentSerializer;
 
 import java.util.ArrayList;
 import java.util.List;

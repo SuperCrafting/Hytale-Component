@@ -1,8 +1,8 @@
-package pt.supercrafting.adventure.tag.resolver;
+package pt.supercrafting.hytale.adventure.tag.resolver;
 
 import net.kyori.adventure.builder.AbstractBuilder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import pt.supercrafting.adventure.tag.HytaleTag;
+import pt.supercrafting.hytale.adventure.tag.HytaleTag;
 
 public sealed interface HytaleTagResolver extends TagResolver permits HytaleTagResolverImpl {
 

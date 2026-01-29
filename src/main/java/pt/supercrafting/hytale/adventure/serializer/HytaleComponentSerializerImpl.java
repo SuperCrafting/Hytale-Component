@@ -1,4 +1,4 @@
-package pt.supercrafting.adventure;
+package pt.supercrafting.hytale.adventure.serializer;
 
 import com.hypixel.hytale.protocol.*;
 import net.kyori.adventure.text.Component;
@@ -14,7 +14,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.NotNull;
-import pt.supercrafting.adventure.tag.resolver.HytaleTagResolver;
+import pt.supercrafting.hytale.adventure.tag.resolver.HytaleTagResolver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -100,7 +100,7 @@ final class HytaleComponentSerializerImpl implements HytaleComponentSerializer {
         }
 
         Style style = styleBuilder.build();
-        return Component.virtual(Void.class, new HytaleRenderer(input, component), style).children(component.children());
+        return Component.virtual(Void.class, HytaleComponentSerializer.box(input, component), style).children(component.children());
     }
 
     @Override
