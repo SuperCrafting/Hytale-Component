@@ -44,21 +44,21 @@ test {
 
 publishing {
 
+    publications {
+
+        maven(MavenPublication) {
+
+            groupId = project.group
+            artifactId = 'hytale-component'
+            version = project.version
+
+            from components.java
+        }
+
+    }
+
     boolean CI = System.getenv("CI") != null
     if(CI) {
-
-        publications {
-
-            maven(MavenPublication) {
-
-                groupId = project.group
-                artifactId = 'hytale-component'
-                version = project.version
-
-                from components.java
-            }
-
-        }
 
         repositories {
 
