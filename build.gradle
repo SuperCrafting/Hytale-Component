@@ -44,44 +44,49 @@ test {
 
 publishing {
 
-    publications {
+    boolean CI = System.getenv("CI") != null
+    if(CI) {
 
-        maven(MavenPublication) {
+        publications {
 
-            groupId = project.group
-            artifactId = 'hytale-component'
-            version = project.version
+            maven(MavenPublication) {
 
-            from components.java
-        }
+                groupId = project.group
+                artifactId = 'hytale-component'
+                version = project.version
 
-    }
-
-    repositories {
-
-        maven {
-
-            name = "GitHubPackages"
-
-            credentials {
-                username System.getenv('GITHUB_USERNAME')
-                password System.getenv('GITHUB_TOKEN')
+                from components.java
             }
 
-            String owner = System.getenv('GITHUB_USERNAME')
-            String repository = System.getenv('GITHUB_REPOSITORY').split('/')[1]
-
-            url = "https://maven.pkg.github.com/${owner}/${repository}"
         }
 
-        maven {
+        repositories {
 
-            name = "JitPack"
-            url = "https://jitpack.io"
+            maven {
 
-            credentials {
-                username = 'jitpack'
-                password = System.getenv('JITPACK_TOKEN')
+                name = "GitHubPackages"
+
+                credentials {
+                    username System.getenv('GITHUB_USERNAME')
+                    password System.getenv('GITHUB_TOKEN')
+                }
+
+                String owner = System.getenv('GITHUB_USERNAME')
+                String repository = System.getenv('GITHUB_REPOSITORY').split('/')[1]
+
+                url = "https://maven.pkg.github.com/${owner}/${repository}"
+            }
+
+            maven {
+
+                name = "JitPack"
+                url = "https://jitpack.io"
+
+                credentials {
+                    username = 'jitpack'
+                    password = System.getenv('JITPACK_TOKEN')
+                }
+
             }
 
         }
