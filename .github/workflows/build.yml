@@ -37,6 +37,7 @@ jobs:
           CI: true
           VERSION: ${{ github.event.inputs.version || '1.0-SNAPSHOT' }}
           GITHUB_TOKEN: ${{ secrets.PACKAGE_SECRET }}
+          JITPACK_TOKEN: ${{ secrets.JITPACK_TOKEN }}
           GITHUB_USERNAME: ${{ github.repository_owner }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run:

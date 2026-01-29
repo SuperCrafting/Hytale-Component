@@ -45,16 +45,20 @@ test {
 publishing {
 
     publications {
+
         maven(MavenPublication) {
+
             groupId = project.group
             artifactId = 'hytale-component'
             version = project.version
 
             from components.java
         }
+
     }
 
     repositories {
+
         maven {
 
             name = "GitHubPackages"
@@ -65,9 +69,23 @@ publishing {
             }
 
             String owner = System.getenv('GITHUB_USERNAME')
-            String repository = System.getenv('GITHUB_REPOSITORY')
+            String repository = System.getenv('GITHUB_REPOSITORY').split('/')[1]
 
             url = "https://maven.pkg.github.com/${owner}/${repository}"
         }
+
+        maven {
+
+            name = "JitPack"
+            url = "https://jitpack.io"
+
+            credentials {
+                username = 'jitpack'
+                password = System.getenv('JITPACK_TOKEN')
+            }
+
+        }
+
     }
+
 }
