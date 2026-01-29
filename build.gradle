@@ -1,9 +1,10 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
 group = 'pt.supercrafting'
-version = '1.0-SNAPSHOT'
+version = System.getenv("VERSION") ?: '1.0-SNAPSHOT'
 compileJava.options.encoding = 'UTF-8'
 
 java {
@@ -31,7 +32,7 @@ dependencies {
     compileOnly 'com.hypixel.hytale:Server:2026.01.24-6e2d4fc36'
 
     testImplementation 'com.hypixel.hytale:Server:2026.01.24-6e2d4fc36'
-    testImplementation platform('org.junit:junit-bom:5.10.0') //Todo: One day...
+    testImplementation platform('org.junit:junit-bom:5.10.0') // Todo: One day...
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
@@ -39,4 +40,34 @@ dependencies {
 test {
     useJUnitPlatform()
     failOnNoDiscoveredTests = false
+}
+
+publishing {
+
+    publications {
+        maven(MavenPublication) {
+            groupId = project.group
+            artifactId = 'hytale-component'
+            version = project.version
+
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+
+            name = "GitHubPackages"
+
+            credentials {
+                username System.getenv('GITHUB_USERNAME')
+                password System.getenv('GITHUB_TOKEN')
+            }
+
+            String owner = System.getenv('GITHUB_USERNAME')
+            String repository = System.getenv('GITHUB_REPOSITORY')
+
+            url = "https://maven.pkg.github.com/${owner}/${repository}"
+        }
+    }
 }
