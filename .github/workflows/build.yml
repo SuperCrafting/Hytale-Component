@@ -33,6 +33,7 @@ jobs:
         run: ./gradlew build
 
       - name: Upload to maven
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
         env:
           CI: true
           VERSION: ${{ github.event.inputs.version || '1.0-SNAPSHOT' }}
