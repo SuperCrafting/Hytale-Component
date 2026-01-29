@@ -77,18 +77,6 @@ publishing {
                 url = "https://maven.pkg.github.com/${owner}/${repository}"
             }
 
-            maven {
-
-                name = "JitPack"
-                url = "https://jitpack.io"
-
-                credentials {
-                    username = 'jitpack'
-                    password = System.getenv('JITPACK_TOKEN')
-                }
-
-            }
-
         }
 
     }
